@@ -16,9 +16,10 @@ flickr = None
 
 def progress(progress, done):
   if done:
-    print "Done uploading"
+    print "done uploading                                        "
   else:
-    print "At %s%%" % progress
+     sys.stdout.write('at %.2f %% \r' % float(progress))
+     sys.stdout.flush()
 
 def auth():
   flickr = flickrapi.FlickrAPI(api_key, api_secret)
@@ -28,20 +29,23 @@ def auth():
   flickr.get_token_part_two((token, frob))
   return flickr
 
-def upload(flickr, filename):
-  dir = os.path.dirname(os.path.realpath(filename))
+def upload(flickr, fn):
+  dir = os.path.dirname(os.path.realpath(fn))
   pathsplit = dir.split(os.path.sep)
   pathprotected = ['"%s"' % s for s in pathsplit]
   pathjoin = ' '.join(pathprotected)
-  print 'about to upload %s with tags %s...' % (filename, pathjoin)
-  flickr.upload( callback=progress, description=u'', filename=filename, is_public=0, is_family=1, is_friend=1, tags=unicode(pathjoin), title=u'',)
+  print 'tags %s' % (pathjoin)
+  flickr.upload(callback=progress, description=u'', filename=fn, is_public=0, is_family=1, is_friend=1, tags=unicode(pathjoin), title=u'',)
 
 def main():
   flickr = auth()
   if len(sys.argv) == 1:
     raise RuntimeError, 'no filenames specified'
+  count = 1
   for fn in sys.argv[1:]:
+    print 'uploading %s (%d of %d)' % (fn, count, len(sys.argv[1:]))
     upload(flickr, fn)
+    count += 1;
 
 if __name__ == '__main__':
   main()
